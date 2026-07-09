@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=\, initial-scale=1.0" />
+    <title>Okandeji John || Student Portfolio</title>
+    <link rel="stylesheet" href="/Assets/styles/style.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="nav-wrap">
+        <a class="brand" href="index.html">TEGA</a>
+
+        <button class="nav-toggle" id="navToggle">
+          <i class="ri-menu-line"></i>
+        </button>
+
+        <ul class="nav-links" id="navLinks">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="#" class="current">Planner</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero sub-hero">
+        <div class="container">
+          <span class="eyebrow">Academic Planner</span>
+
+          <h1>Task management</h1>
+
+          <p class="lead">
+            Add tasks, mark them complete, delete what's done. Saved in this
+            browser session.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-tight">
+        <div class="container">
+          <div class="planner-shell">
+            <form class="planner-form" id="taskForm">
+              <input
+                type="text"
+                id="taskInput"
+                placeholder="e.g. Study for upcoming exam"
+                maxlength="120"
+                required
+              />
+
+              <select id="taskPriority">
+                <option value="Low">Low priority</option>
+                <option value="Medium" selected>Medium priority</option>
+                <option value="High">High priority</option>
+              </select>
+
+              <input type="date" id="taskDue" />
+
+              <button type="submit" class="btn btn-primary">Add Task</button>
+            </form>
+
+            <div class="planner-stats" id="plannerStats">
+              <span><strong id="statTotal">0</strong> total</span>
+              <span><strong id="statOpen">0</strong> open</span>
+              <span><strong id="statDone">0</strong> completed</span>
+            </div>
+
+            <ul class="task-list" id="taskList"></ul>
+
+            <p class="empty-state" id="emptyState">
+              No tasks yet, add your first one above.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container footer-wrap">
+        <span>&copy; 2026 Okandeji John.</span>
+
+        <div class="footer-links">
+          <a href="about.html">About</a>
+          <a href="projects.html">Projects</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/Assets/scripts/script.js"></script>
+  </body>
+</html>
