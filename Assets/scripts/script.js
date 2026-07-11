@@ -21,142 +21,145 @@ if (navToggle && navLinks) {
 
 const STORAGE_KEY = "planner_tasks";
 
-const form = document.getElementById("taskForm");
+const taskForm = document.getElementById("taskForm");
 
-if (!form) return;
+// Only run planner code if the form exists
+if (taskForm) {
+  const elements = {
+    form: taskForm,
+    input: document.getElementById("taskInput"),
+    priority: document.getElementById("taskPriority"),
+    due: document.getElementById("taskDue"),
+    list: document.getElementById("taskList"),
+    empty: document.getElementById("emptyState"),
+    total: document.getElementById("statTotal"),
+    open: document.getElementById("statOpen"),
+    done: document.getElementById("statDone"),
+  };
 
-const elements = {
-  form,
-  input: document.getElementById("taskInput"),
-  priority: document.getElementById("taskPriority"),
-  due: document.getElementById("taskDue"),
-  list: document.getElementById("taskList"),
-  empty: document.getElementById("emptyState"),
-  total: document.getElementById("statTotal"),
-  open: document.getElementById("statOpen"),
-  done: document.getElementById("statDone"),
-};
+  let tasks = getTasks();
 
-let tasks = getTasks();
+  function getTasks() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }
 
-function getTasks() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-}
+  function saveTasks() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }
 
-function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
+  function formatDate(date) {
+    if (!date) return "No due date";
 
-function formatDate(date) {
-  if (!date) return "No due date";
+    return `Due ${new Date(date).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })}`;
+  }
 
-  return `Due ${new Date(date).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })}`;
-}
+  function updateStats() {
+    const completed = tasks.filter(task => task.done).length;
 
-function updateStats() {
-  const completed = tasks.filter(task => task.done).length;
+    if (elements.total) elements.total.textContent = tasks.length;
+    if (elements.done) elements.done.textContent = completed;
+    if (elements.open) elements.open.textContent = tasks.length - completed;
+  }
 
-  elements.total.textContent = tasks.length;
-  elements.done.textContent = completed;
-  elements.open.textContent = tasks.length - completed;
-}
+  function createTaskElement(task) {
+    return `
+      <li class="task-item ${task.done ? "done" : ""}" data-id="${task.id}">
+        <button class="task-check">
+          ${task.done ? "✓" : ""}
+        </button>
 
-function createTaskElement(task) {
-  return `
-    <li class="task-item ${task.done ? "done" : ""}" data-id="${task.id}">
-      <button class="task-check">
-        ${task.done ? "✓" : ""}
-      </button>
-
-      <div class="task-main">
-        <div class="task-title">${task.title}</div>
-        <div class="task-meta">
-          ${task.priority} priority · ${formatDate(task.due)}
+        <div class="task-main">
+          <div class="task-title">${task.title}</div>
+          <div class="task-meta">
+            ${task.priority} priority · ${formatDate(task.due)}
+          </div>
         </div>
-      </div>
 
-      <button class="task-delete">
-        Delete
-      </button>
-    </li>
-  `;
-}
+        <button class="task-delete">
+          Delete
+        </button>
+      </li>
+    `;
+  }
 
-function renderTasks() {
-  elements.empty.style.display = tasks.length ? "none" : "block";
+  function renderTasks() {
+    if (elements.empty) elements.empty.style.display = tasks.length ? "none" : "block";
 
-  elements.list.innerHTML = tasks
-    .map(createTaskElement)
-    .join("");
+    if (elements.list) {
+      elements.list.innerHTML = tasks
+        .map(createTaskElement)
+        .join("");
+    }
 
-  updateStats();
-}
+    updateStats();
+  }
 
-function addTask(title, priority, due) {
-  tasks.push({
-    id: Date.now(),
-    title,
-    priority,
-    due,
-    done: false,
+  function addTask(title, priority, due) {
+    tasks.push({
+      id: Date.now(),
+      title,
+      priority,
+      due,
+      done: false,
+    });
+
+    saveTasks();
+    renderTasks();
+  }
+
+  elements.form.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const title = elements.input.value.trim();
+
+    if (!title) return;
+
+    addTask(
+      title,
+      elements.priority.value,
+      elements.due.value
+    );
+
+    elements.form.reset();
+    elements.priority.value = "Medium";
+    elements.input.focus();
   });
 
-  saveTasks();
+  elements.list.addEventListener("click", e => {
+    const item = e.target.closest(".task-item");
+
+    if (!item) return;
+
+    const id = Number(item.dataset.id);
+
+    if (e.target.classList.contains("task-check")) {
+      tasks = tasks.map(task =>
+        task.id === id
+          ? { ...task, done: !task.done }
+          : task
+      );
+    }
+
+    if (e.target.classList.contains("task-delete")) {
+      tasks = tasks.filter(task => task.id !== id);
+    }
+
+    saveTasks();
+    renderTasks();
+  });
+
   renderTasks();
 }
-
-elements.form.addEventListener("submit", e => {
-  e.preventDefault();
-
-  const title = elements.input.value.trim();
-
-  if (!title) return;
-
-  addTask(
-    title,
-    elements.priority.value,
-    elements.due.value
-  );
-
-  elements.form.reset();
-  elements.priority.value = "Medium";
-  elements.input.focus();
-});
-
-elements.list.addEventListener("click", e => {
-  const item = e.target.closest(".task-item");
-
-  if (!item) return;
-
-  const id = Number(item.dataset.id);
-
-  if (e.target.classList.contains("task-check")) {
-    tasks = tasks.map(task =>
-      task.id === id
-        ? { ...task, done: !task.done }
-        : task
-    );
-  }
-
-  if (e.target.classList.contains("task-delete")) {
-    tasks = tasks.filter(task => task.id !== id);
-  }
-
-  saveTasks();
-  renderTasks();
-});
-
-renderTasks();
 
 /* ---------- contact js ---------- */
 
-const form = document.getElementById("contactForm");
+const contactForm = document.getElementById("contactForm");
 
-if (form) {
+if (contactForm) {
   const status = document.getElementById("formStatus");
 
   const fields = {
@@ -186,8 +189,8 @@ if (form) {
   const PHONE_REGEX = /^\d+$/;
 
   function showError(field, message) {
-    field.error.textContent = message;
-    field.wrapper.classList.toggle("invalid", message !== "");
+    if (field.error) field.error.textContent = message;
+    if (field.wrapper) field.wrapper.classList.toggle("invalid", message !== "");
   }
 
   function validateName() {
@@ -248,15 +251,15 @@ if (form) {
     return true;
   }
 
-  fields.name.input.addEventListener("blur", validateName);
-  fields.email.input.addEventListener("blur", validateEmail);
-  fields.phone.input.addEventListener("blur", validatePhone);
-  fields.message.input.addEventListener("blur", validateMessage);
+  if (fields.name.input) fields.name.input.addEventListener("blur", validateName);
+  if (fields.email.input) fields.email.input.addEventListener("blur", validateEmail);
+  if (fields.phone.input) fields.phone.input.addEventListener("blur", validatePhone);
+  if (fields.message.input) fields.message.input.addEventListener("blur", validateMessage);
 
-  form.addEventListener("submit", (e) => {
+  contactForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    status.classList.remove("show");
+    if (status) status.classList.remove("show");
 
     const isValid =
       validateName() &&
@@ -265,7 +268,7 @@ if (form) {
       validateMessage();
 
     if (!isValid) {
-      const firstInvalid = form.querySelector(
+      const firstInvalid = contactForm.querySelector(
         ".invalid input, .invalid textarea"
       );
 
@@ -276,8 +279,8 @@ if (form) {
       return;
     }
 
-    status.classList.add("show");
-    form.reset();
+    if (status) status.classList.add("show");
+    contactForm.reset();
 
     Object.values(fields).forEach((field) => showError(field, ""));
   });
