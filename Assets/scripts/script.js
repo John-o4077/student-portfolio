@@ -1,12 +1,21 @@
 /* ---------- nav toggler ---------- */
 
-(function initNav() {
+(function navToggler() {
   const toggle = document.getElementById("navToggle");
   const links = document.getElementById("navLinks");
+
   if (!toggle || !links) return;
+
+  const icon = toggle.querySelector("i");
 
   toggle.addEventListener("click", () => {
     const isOpen = links.classList.toggle("open");
+
+    if (isOpen) {
+      icon.classList.replace("ri-menu-line", "ri-close-line");
+    } else {
+      icon.classList.replace("ri-close-line", "ri-menu-line");
+    }
   });
 })();
 
