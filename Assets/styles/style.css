@@ -713,7 +713,7 @@ footer {
   }
 
   .nav-links a::before{
-    display: noone;
+    display: none;
   }
 
   .nav-links.open {
