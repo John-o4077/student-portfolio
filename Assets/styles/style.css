@@ -97,7 +97,7 @@ header {
 
 .nav-links {
   display: flex;
-  gap: 4px;
+  gap: 14px;
   list-style: none;
   font-family: var(--mono);
   font-size: 0.82rem;
@@ -107,8 +107,7 @@ header {
 .nav-links a {
   position: relative;
   color: #c9cee0;
-  padding: 4px 8px;
-  border-radius: 3px;
+  padding: 6px 8px;
   transition: all 0.3s ease-in-out;
 }
 
