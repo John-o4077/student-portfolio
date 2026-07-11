@@ -111,10 +111,23 @@ header {
   transition: all 0.2s ease-in-out;
 }
 
-.nav-links a:hover,
-.nav-links a.current {
+.nav-links a::before{
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--paper);
+  transition: width 0.2s ease-in-out;
+}
+
+.nav-links a:hover {
   color: var(--paper);
-  background: rgba(201, 151, 46, 0.18);
+}
+
+.nav-links a:hover::before {
+    width: 100%;
 }
 
 .nav-links a.current {
@@ -126,9 +139,7 @@ header {
   background: none;
   border: 0;
   color: var(--paper);
-  font-family: var(--mono);
-  padding: 6px 10px;
-  border-radius: 3px;
+  font-size: 18px;
 }
 
 /* ---------- Miscellaneous ---------- */
