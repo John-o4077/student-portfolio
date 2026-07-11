@@ -18,9 +18,9 @@
   --text: #232323;
   --text-dim: #5b5b5b;
 
-  --font: "Fraunces", "Georgia", serif;
-  --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --mono: "IBM Plex Mono", "Courier New", monospace;
+  --font: "Fraunces", serif;
+  --body: "Inter", sans-serif;
+  --mono: "IBM Plex Mono", monospace;
 }
 
 * {
