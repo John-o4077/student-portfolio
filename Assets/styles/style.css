@@ -188,6 +188,7 @@ p {
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
+
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -683,9 +684,11 @@ footer {
   .hero-grid {
     grid-template-columns: 1fr;
   }
+  
   .grid-3 {
     grid-template-columns: 1fr 1fr;
   }
+  
   .grid-2 {
     grid-template-columns: 1fr;
   }
@@ -707,6 +710,10 @@ footer {
   .nav-links a.current {
     color: var(--gold);
     background: 0;
+  }
+
+  .nav-links a::before{
+    display: noone;
   }
 
   .nav-links.open {
