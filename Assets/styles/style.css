@@ -663,19 +663,8 @@ footer {
 
 .footer-wrap {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.footer-links {
-  display: flex;
-  gap: 18px;
-}
-
-.footer-links a:hover {
-  color: var(--gold);
 }
 
 /* ---------- Responsive ---------- */
@@ -736,10 +725,5 @@ footer {
   .planner-form select {
     flex: 1 1 auto;
     width: 100%;
-  }
-
-  .footer-wrap {
-    flex-direction: column;
-    text-align: center;
   }
 }
