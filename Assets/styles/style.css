@@ -107,9 +107,9 @@ header {
 .nav-links a {
   position: relative;
   color: #c9cee0;
-  padding: 8px 14px;
+  padding: 4px 8px;
   border-radius: 3px;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 .nav-links a::before{
@@ -120,7 +120,7 @@ header {
   width: 0;
   height: 2px;
   background: var(--gold);
-  transition: width 0.2s ease-in-out;
+  transition: width 0.3s ease-in-out;
 }
 
 .nav-links a:hover {
@@ -133,6 +133,10 @@ header {
 
 .nav-links a.current {
   color: var(--gold);
+}
+
+.nav-links a.current::before {
+    width: 100%;
 }
 
 .nav-toggle {
