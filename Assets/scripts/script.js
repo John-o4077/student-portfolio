@@ -1,255 +1,250 @@
 /* ---------- nav toggler ---------- */
 
-(function navToggler() {
-  const toggle = document.getElementById("navToggle");
-  const links = document.getElementById("navLinks");
+const navToggle = document.getElementById("navToggle");
+const navLinks = document.getElementById("navLinks");
 
-  if (!toggle || !links) return;
+if (navToggle && navLinks) {
+  const icon = navToggle.querySelector("i");
 
-  const icon = toggle.querySelector("i");
+  navToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("open");
 
-  toggle.addEventListener("click", () => {
-    const isOpen = links.classList.toggle("open");
-
-    if (isOpen) {
+    if (navLinks.classList.contains("open")) {
       icon.classList.replace("ri-menu-line", "ri-close-line");
     } else {
       icon.classList.replace("ri-close-line", "ri-menu-line");
     }
   });
-})();
+}
 
 /* ---------- planner js ---------- */
 
-(function initPlanner() {
-  const form = document.getElementById("taskForm");
-  if (!form) return; // not on this page
+const STORAGE_KEY = "planner_tasks";
 
-  const input = document.getElementById("taskInput");
-  const prioritySelect = document.getElementById("taskPriority");
-  const dueInput = document.getElementById("taskDue");
-  const list = document.getElementById("taskList");
-  const emptyState = document.getElementById("emptyState");
-  const statTotal = document.getElementById("statTotal");
-  const statOpen = document.getElementById("statOpen");
-  const statDone = document.getElementById("statDone");
+const form = document.getElementById("taskForm");
 
-  const STORAGE_KEY = "tega_planner_tasks";
+if (!form) return;
 
-  let tasks = loadTasks();
+const elements = {
+  form,
+  input: document.getElementById("taskInput"),
+  priority: document.getElementById("taskPriority"),
+  due: document.getElementById("taskDue"),
+  list: document.getElementById("taskList"),
+  empty: document.getElementById("emptyState"),
+  total: document.getElementById("statTotal"),
+  open: document.getElementById("statOpen"),
+  done: document.getElementById("statDone"),
+};
 
-  function loadTasks() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  }
+let tasks = getTasks();
 
-  function saveTasks() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    } catch (e) {
-      console.log(e);
-    }
-  }
+function getTasks() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+}
 
-  function formatDue(dateStr) {
-    if (!dateStr) return "No due date";
-    const d = new Date(dateStr + "T00:00:00");
-    if (isNaN(d.getTime())) return "No due date";
-    return (
-      "Due " +
-      d.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+function saveTasks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+function formatDate(date) {
+  if (!date) return "No due date";
+
+  return `Due ${new Date(date).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })}`;
+}
+
+function updateStats() {
+  const completed = tasks.filter(task => task.done).length;
+
+  elements.total.textContent = tasks.length;
+  elements.done.textContent = completed;
+  elements.open.textContent = tasks.length - completed;
+}
+
+function createTaskElement(task) {
+  return `
+    <li class="task-item ${task.done ? "done" : ""}" data-id="${task.id}">
+      <button class="task-check">
+        ${task.done ? "✓" : ""}
+      </button>
+
+      <div class="task-main">
+        <div class="task-title">${task.title}</div>
+        <div class="task-meta">
+          ${task.priority} priority · ${formatDate(task.due)}
+        </div>
+      </div>
+
+      <button class="task-delete">
+        Delete
+      </button>
+    </li>
+  `;
+}
+
+function renderTasks() {
+  elements.empty.style.display = tasks.length ? "none" : "block";
+
+  elements.list.innerHTML = tasks
+    .map(createTaskElement)
+    .join("");
+
+  updateStats();
+}
+
+function addTask(title, priority, due) {
+  tasks.push({
+    id: Date.now(),
+    title,
+    priority,
+    due,
+    done: false,
+  });
+
+  saveTasks();
+  renderTasks();
+}
+
+elements.form.addEventListener("submit", e => {
+  e.preventDefault();
+
+  const title = elements.input.value.trim();
+
+  if (!title) return;
+
+  addTask(
+    title,
+    elements.priority.value,
+    elements.due.value
+  );
+
+  elements.form.reset();
+  elements.priority.value = "Medium";
+  elements.input.focus();
+});
+
+elements.list.addEventListener("click", e => {
+  const item = e.target.closest(".task-item");
+
+  if (!item) return;
+
+  const id = Number(item.dataset.id);
+
+  if (e.target.classList.contains("task-check")) {
+    tasks = tasks.map(task =>
+      task.id === id
+        ? { ...task, done: !task.done }
+        : task
     );
   }
 
-  function render() {
-    list.innerHTML = "";
-
-    if (tasks.length === 0) {
-      emptyState.style.display = "block";
-    } else {
-      emptyState.style.display = "none";
-      tasks.forEach((task) => list.appendChild(buildTaskEl(task)));
-    }
-
-    const total = tasks.length;
-    const done = tasks.filter((t) => t.done).length;
-    statTotal.textContent = String(total);
-    statDone.textContent = String(done);
-    statOpen.textContent = String(total - done);
+  if (e.target.classList.contains("task-delete")) {
+    tasks = tasks.filter(task => task.id !== id);
   }
 
-  function buildTaskEl(task) {
-    const li = document.createElement("li");
-    li.className = "task-item" + (task.done ? " done" : "");
-    li.dataset.id = String(task.id);
+  saveTasks();
+  renderTasks();
+});
 
-    const check = document.createElement("button");
-    check.className = "task-check";
-    check.type = "button";
-    check.textContent = task.done ? "✓" : "";
-    check.addEventListener("click", () => toggleTask(task.id));
-
-    const main = document.createElement("div");
-    main.className = "task-main";
-
-    const title = document.createElement("div");
-    title.className = "task-title";
-    title.textContent = task.title;
-
-    const meta = document.createElement("div");
-    meta.className = "task-meta";
-    meta.textContent = `${task.priority} priority · ${formatDue(task.due)}`;
-
-    main.appendChild(title);
-    main.appendChild(meta);
-
-    const del = document.createElement("button");
-    del.className = "task-delete";
-    del.type = "button";
-    del.textContent = "Delete";
-    del.addEventListener("click", () => deleteTask(task.id));
-
-    li.appendChild(check);
-    li.appendChild(main);
-    li.appendChild(del);
-    return li;
-  }
-
-  function addTask(title, priority, due) {
-    tasks.push({
-      id: Date.now(),
-      title: title.trim(),
-      priority,
-      due,
-      done: false,
-    });
-    saveTasks();
-    render();
-  }
-
-  function toggleTask(id) {
-    tasks = tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
-    saveTasks();
-    render();
-  }
-
-  function deleteTask(id) {
-    tasks = tasks.filter((t) => t.id !== id);
-    saveTasks();
-    render();
-  }
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const title = input.value.trim();
-    if (!title) {
-      input.focus();
-      return;
-    }
-    addTask(title, prioritySelect.value, dueInput.value);
-    form.reset();
-    prioritySelect.value = "Medium";
-    input.focus();
-  });
-
-  render();
-})();
+renderTasks();
 
 /* ---------- contact js ---------- */
 
-(function initContactForm() {
-  const form = document.getElementById("contactForm");
-  if (!form) return;
+const form = document.getElementById("contactForm");
 
+if (form) {
   const status = document.getElementById("formStatus");
 
   const fields = {
     name: {
       input: document.getElementById("name"),
       error: document.getElementById("error-name"),
-      wrap: document.getElementById("field-name"),
+      wrapper: document.getElementById("field-name"),
     },
     email: {
       input: document.getElementById("email"),
       error: document.getElementById("error-email"),
-      wrap: document.getElementById("field-email"),
+      wrapper: document.getElementById("field-email"),
     },
     phone: {
       input: document.getElementById("phone"),
       error: document.getElementById("error-phone"),
-      wrap: document.getElementById("field-phone"),
+      wrapper: document.getElementById("field-phone"),
     },
     message: {
       input: document.getElementById("message"),
       error: document.getElementById("error-message"),
-      wrap: document.getElementById("field-message"),
+      wrapper: document.getElementById("field-message"),
     },
   };
 
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const DIGITS_RE = /^[0-9]+$/;
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PHONE_REGEX = /^\d+$/;
 
-  function setError(field, message) {
+  function showError(field, message) {
     field.error.textContent = message;
-    field.wrap.classList.toggle("invalid", Boolean(message));
+    field.wrapper.classList.toggle("invalid", message !== "");
   }
 
   function validateName() {
-    const v = fields.name.input.value.trim();
-    if (!v) {
-      setError(fields.name, "Name is required.");
+    const value = fields.name.input.value.trim();
+
+    if (!value) {
+      showError(fields.name, "Name is required.");
       return false;
     }
-    setError(fields.name, "");
+
+    showError(fields.name, "");
     return true;
   }
 
   function validateEmail() {
-    const v = fields.email.input.value.trim();
-    if (!v) {
-      setError(fields.email, "Email address is required.");
+    const value = fields.email.input.value.trim();
+
+    if (!value) {
+      showError(fields.email, "Email is required.");
       return false;
     }
-    if (!EMAIL_RE.test(v)) {
-      setError(
-        fields.email,
-        "Enter a valid email address (e.g. name@example.com).",
-      );
+
+    if (!EMAIL_REGEX.test(value)) {
+      showError(fields.email, "Enter a valid email address.");
       return false;
     }
-    setError(fields.email, "");
+
+    showError(fields.email, "");
     return true;
   }
 
   function validatePhone() {
-    const v = fields.phone.input.value.trim();
-    if (!v) {
-      setError(fields.phone, "Phone number is required.");
+    const value = fields.phone.input.value.trim();
+
+    if (!value) {
+      showError(fields.phone, "Phone number is required.");
       return false;
     }
-    if (!DIGITS_RE.test(v)) {
-      setError(fields.phone, "Phone number must contain digits only.");
+
+    if (!PHONE_REGEX.test(value)) {
+      showError(fields.phone, "Phone number must contain only digits.");
       return false;
     }
-    setError(fields.phone, "");
+
+    showError(fields.phone, "");
     return true;
   }
 
   function validateMessage() {
-    const v = fields.message.input.value.trim();
-    if (!v) {
-      setError(fields.message, "Message cannot be empty.");
+    const value = fields.message.input.value.trim();
+
+    if (!value) {
+      showError(fields.message, "Message cannot be empty.");
       return false;
     }
-    setError(fields.message, "");
+
+    showError(fields.message, "");
     return true;
   }
 
@@ -260,21 +255,30 @@
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+
     status.classList.remove("show");
 
-    const validName = validateName();
-    const validEmail = validateEmail();
-    const validPhone = validatePhone();
-    const validMessage = validateMessage();
+    const isValid =
+      validateName() &&
+      validateEmail() &&
+      validatePhone() &&
+      validateMessage();
 
-    if (validName && validEmail && validPhone && validMessage) {
-      status.classList.add("show");
-      form.reset();
-    } else {
+    if (!isValid) {
       const firstInvalid = form.querySelector(
-        ".invalid input, .invalid textarea",
+        ".invalid input, .invalid textarea"
       );
-      if (firstInvalid) firstInvalid.focus();
+
+      if (firstInvalid) {
+        firstInvalid.focus();
+      }
+
+      return;
     }
+
+    status.classList.add("show");
+    form.reset();
+
+    Object.values(fields).forEach((field) => showError(field, ""));
   });
-})();
+}
